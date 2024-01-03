@@ -38,3 +38,12 @@ button {
     transition: 0.25s;
   }
 }
+
+label {
+  display: block;
+}
+
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

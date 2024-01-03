@@ -42,12 +42,12 @@ impl Component for ShoppingListPage {
         rsx!(
             <div class="container">
                 <Link to="/info">"project info"</Link>
-                <ListItemForm props={ListItemFormProps {next_id: self.next_id, add_handler: add_handler_callback}}/>
+                <ListItemForm props=ListItemFormProps {next_id: self.next_id, add_handler: add_handler_callback}/>
                 <h1>"Items on the list:"</h1>
                 for { self.list_items.iter().map( |details| {
                     // create callback which will send the RemoveItem message with given id
                     let remove_callback = behavior.create_callback(ShoppingListMessage::RemoveItem);
-                    rsx! { <ListItem props={ ListItemProps{details: details.clone(), remove_callback}} /> }
+                    rsx! { <ListItem props=ListItemProps{details: details.clone(), remove_callback} /> }
                 })}
             </div>
         )

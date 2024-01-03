@@ -37,24 +37,26 @@ impl Component for ListItemForm {
 
     fn view(
         &self,
-        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+        _behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
     ) -> wal_core::virtual_dom::VNode {
         let new_item_id: i32 = self.next_item_id;
         let add_handler = self.add_handler.clone();
 
         // create callback to handle button press
-        let add_on_click = behavior.create_callback(move |_event: MouseEvent| {
+        let add_on_click = Callback::new(move |_event: MouseEvent| {
             let document = web_sys::window().unwrap().document().unwrap();
 
             // get name from input
             let element = document.get_element_by_id("newItemName").unwrap();
             let input_element = element.dyn_into::<HtmlInputElement>().unwrap();
             let new_item_name = input_element.value();
+            input_element.set_value("");
 
             // get count from input
             let element = document.get_element_by_id("newItemCount").unwrap();
             let input_element = element.dyn_into::<HtmlInputElement>().unwrap();
-            let new_item_count = input_element.value().parse::<i32>().unwrap();
+            let new_item_count = input_element.value().parse::<i32>().unwrap_or(0);
+            input_element.set_value("0");
 
             let message = ListItemDetails {
                 id: new_item_id,
@@ -66,24 +68,20 @@ impl Component for ListItemForm {
         });
 
         rsx! {
-            <>
             <h1>"Add new item"</h1>
             <div class="container">
                 <div>
-                    <label>"name"</label>
-                    <br/>
+                    <label for="newItemName">"name"</label>
                     <input id="newItemName" value = {&self.item_name} />
                 </div>
-                <div >
-                    <label>"count"</label>
-                    <br/>
-                    <input id="newItemCount" value = {self.item_count} />
+                <div>
+                    <label for="newItemCount">"count"</label>
+                    <input id="newItemCount" type="number" value = {self.item_count} />
                 </div>
                 <button onclick={add_on_click}>
                     "Add"
                 </button>
             </div>
-            </>
         }
     }
 
