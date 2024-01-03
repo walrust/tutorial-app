@@ -65,12 +65,22 @@ Aplikacja zostanie wystawiona lokalnie na porcie, który został wskazany w plik
 
 # Tworzenie aplikacji z wykorzystaniem Wal
 
-W tej sekcji zostanie opisany krok po kroku proces tworzenia prostej aplikacji z wykorzystaniem narzędzia wal. Aplikacja ta składała się będzie z dwóch podstron: strony powitalnej oraz strony z informacjami o projekcie.
+W tej sekcji zostanie opisany krok po kroku proces tworzenia prostej aplikacji z wykorzystaniem narzędzia wal. Aplikacja ta składała się będzie z dwóch podstron: strony z listą zakupów oraz strony z informacjami o projekcie.
 
 ## Stworzenie komponentów stron
 
-Pierwszym krokiem będzie stworzenie dwóch komponentów, po jednym dla każdej z podstron. W tym celu należy utworzyć nowe pliki: `welcomepage.rs` oraz `infopage.rs` w katalogu `src` projektu.
-Następnie w pliku `main.rs` należy dodać nowo utworzone pliki jako moduły projektu:
+Pierwszym krokiem będzie stworzenie dwóch komponentów, po jednym dla każdej z podstron. Strona informacyjna będzie składała się tylko z jednego prostego komponentu, dlatego możemy stowrzyć jej plik o nazwie `infopage.rs` bezpośrednio w katalogu src. Strona z listą zakupów będzie bardziej złożona, dlatego lepiej wyznaczyć dla niej osoby folder o nazwie `shoppinglist_page`. W środku folderu w pliku `mod.rs` możemy zadeklarować tymczasowo główny komponent strony z zakupami. Struktura plików powinna wyglądac nasteująco:
+
+```
+src
+│── shoppinglist_page
+│ 	└── mod.rs
+├── infopage.rs
+├── main.rs
+└── hellopage.rs
+```
+
+Następnie w pliku `main.rs` należy dodać nowo utworzony plik oraz folder jako moduły projektu:
 
 ```Rust
 use hellopage::HelloComponent;
@@ -78,7 +88,7 @@ use wal_core::router::builder::RouterBuilder;
 
 mod hellopage;
 mod infopage;
-mod welcomepage;
+mod shoppinglist_page;
 
 fn main() {
     RouterBuilder::default()
@@ -88,49 +98,7 @@ fn main() {
 }
 ```
 
-Wewnątrz każdego z nowych plików znajdować się będzie struktura o odpowiadającej nazwie będąca głównym komponentem danej podstrony `WelcomePage`. Dla tej struktury zaimplementowany musi zostać trait `Component` oraz trait `Default`.
-
-```Rust
-// --- welcomepage.rs ---
-
-use wal_core::component::Component;
-use wal_rsx::rsx;
-
-// component struct - temporarily with no fields
-pub(crate) struct WelcomePage;
-
-impl Component for WelcomePage {
-   
-    // we don't need any messages and propertis for now
-    type Message = ();
-    type Properties = ();
-
-	// component constructor
-    fn new(props: Self::Properties) -> Self {
-        WelcomePage
-    }
-   
-	// view function - here we define the component structure using rsx syntax
-    fn view(
-        &self,
-        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
-    ) -> wal_core::virtual_dom::VNode {
-        rsx!(<div>"This is a welcome page."</div>)
-    }
-
-	// update function - for now we don't need any updating
-    fn update(&mut self, message: Self::Message) -> bool {
-        false
-    }
-
-}
-
-impl Default for WelcomePage {
-    fn default() -> Self {
-        Self::new(())
-    }
-}
-```
+Wewnątrz każdego z nowych plików znajdować się będzie struktura o odpowiadającej nazwie będąca głównym komponentem danej podstrony. Dla każdej z tych struktur zaimplementowany musi zostać trait `Component` oraz trait `Default`.
 
 ```Rust
 // --- infopage.rs ---
@@ -174,7 +142,49 @@ impl Default for InfoPage {
 }
 ```
 
-Po stworzeniu komponentów należy dodać je jako komponenty główne dla podstron. Dla adresu URL: `/` chcemy wyświetlić komponent `HelloPage`, natomiast dla adresu `/info` komponent `InfoPage`. W tym celu dodajemy 2 wywołania funkcji `RouterBuilder::add_page` w pliku `main.rs`. Na tym etapie można pozbyć się komponentu `HelloPage` wchodzącego w skład początkowego szablonu projektu, ponieważ nie będzie on już potrzebny w dalszych etapach.
+```Rust
+// --- shoppinglist_page/mod.rs ---
+
+use wal_core::component::Component;
+use wal_rsx::rsx;
+
+// component struct - temporarily with no fields
+pub(crate) struct ShoppingListPage;
+
+impl Component for ShoppingListPage {
+   
+    // we don't need any messages and propertis for now
+    type Message = ();
+    type Properties = ();
+
+	// component constructor
+    fn new(props: Self::Properties) -> Self {
+        ShoppingListPage
+    }
+   
+	// view function - here we define the component structure using rsx syntax
+    fn view(
+        &self,
+        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+    ) -> wal_core::virtual_dom::VNode {
+        rsx!(<div>"This is a shopping list page."</div>)
+    }
+
+	// update function - for now we don't need any updating
+    fn update(&mut self, message: Self::Message) -> bool {
+        false
+    }
+
+}
+
+impl Default for ShoppingListPage {
+    fn default() -> Self {
+        Self::new(())
+    }
+}
+```
+
+Po stworzeniu komponentów należy dodać je jako komponenty główne dla podstron. Dla adresu URL: `/` chcemy wyświetlić komponent `ShoppingListPage`, natomiast dla adresu `/info` komponent `InfoPage`. W tym celu dodajemy 2 wywołania funkcji `RouterBuilder::add_page` w pliku `main.rs`. Na tym etapie można pozbyć się komponentu `HelloPage` wchodzącego w skład początkowego szablonu projektu, ponieważ nie będzie on potrzebny w dalszych etapach.
 
 ```Rust
 // --- main.rs ---
@@ -187,7 +197,7 @@ mod welcomepage;
 
 fn main() {
     RouterBuilder::default()
-        .add_page::<WelcomePage>("/")
+        .add_page::<ShoppingListPage>("/")
         .add_page::<InfoPage>("/info")
         .build()
         .start();
@@ -198,4 +208,27 @@ W oknie przeglądarki można już zobaczyć wyświetlane komponenty po nawigacji
 
 ## Strona z informacjami
 
-Na stronie z informacjami chcemy wyświetlić użytkownikowi krótkie informacje o stronie wraz z linkami do do źródeł.
+Na stronie z informacjami chcemy wyświetlić użytkownikowi krótkie informacje o stronie wraz z linkiem do repozytorium, gdzie znajdzie on więcej przykładów. W tym celu należy zmienić strukturę komponentu w pliku `infopage.rs`. Dodatkowo chcemu dać możliwość nawigacji do strony z listą zakupów. W tym celu wewnątrz komponentu umiescić należy `<Link>` pozwalający na wydajną nawigacje pomiedzy różnymi adresami URL wewnątrz aplikacji.
+
+```Rust
+// --- infopage.rs ---
+// ...
+
+ fn view(
+        &self,
+        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+    ) -> wal_core::virtual_dom::VNode {
+        rsx!(<div class="container">
+            <h1>"This app has been made using Wal"</h1>
+            <p>"You can find more complex examples on the offical Wal GtiHub repository in the demo directory:"</p>
+            <a href="https://github.com/walrust/wal">"Wal repository"</a>
+            <Link to="/">"back to the shopping list"</Link>
+        </div>)
+    }
+
+// ...
+```
+
+## Strona powitalna
+
+Strona powitalna bedzie składała się z kilku pomniejszych komponantów: komponentu z wiadomością powitalną oraz komponentu z formularzem, gdzie użytkownik będzie mógł wpisać swoje imię. W folderze `src` tworzymy nowy folder o nazwie `welcomepage_components`. ewnatrz nowego folderu należy utowrzyć dwa nowe pliki: `welcomebanner.rs` oraz `userform.rs`. Dodatkowo należy utowrzyć plik `mod.rs`, gdzie zawarte będą deklaracje modułów dla nowych plików:
