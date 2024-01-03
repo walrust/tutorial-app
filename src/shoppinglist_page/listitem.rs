@@ -2,7 +2,12 @@ use wal_core::{
     component::{callback::Callback, Component},
     events::MouseEvent,
 };
+use wal_css::{css::Css, css_stylesheet};
 use wal_rsx::rsx;
+
+thread_local! {
+    static LIST_ITEM_CSS: Css = css_stylesheet!("./listitem_styles.css")
+}
 
 #[derive(Hash, Clone)]
 pub(crate) struct ListItemProps {
@@ -40,15 +45,23 @@ impl Component for ListItem {
             props.remove_callback.emit(props.details.id);
         });
 
-        rsx! {
-            <div class="container">
-                <span>{&self.props.details.name}</span>
-                <span>{self.props.details.count}</span>
-                <button onclick={delete_on_click}>
-                    "delete"
-                </button>
-            </div>
-        }
+        LIST_ITEM_CSS.with(|css| {
+            rsx! {
+                <div class={&css["container"]}>
+                    <div class="container">
+                        <p>"name"</p>
+                        <p>{&self.props.details.name}</p>
+                    </div>
+                    <div class="container">
+                        <p>"count"</p>
+                        <p>{self.props.details.count}</p>
+                    </div>
+                    <button onclick={delete_on_click}>
+                        "delete"
+                    </button>
+                </div>
+            }
+        })
     }
 
     fn update(&mut self, _message: Self::Message) -> bool {

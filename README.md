@@ -301,8 +301,14 @@ impl Component for ListItem {
 
         rsx! {
             <div class="container">
-                <span>{&self.props.details.name}</span>
-                <span>{self.props.details.count}</span>
+                <div class="container">
+                    <p>"name"</p>
+                    <p>{&self.props.details.name}</p>
+                </div>
+                <div class="container">
+                    <p>"count"</p>
+                    <p>{self.props.details.count}</p>
+                </div>
                 <button onclick={delete_on_click}>
                     "delete"
                 </button>
@@ -539,3 +545,101 @@ impl Default for ShoppingListPage {
 ```
 
 ## Dopracowanie stylowania
+
+Elementy dodawane do listy nie wylądają zbyt ładnie. Lepiej wyglądałyby elementy, których szczegóły są wyświetlone w poziomie zamiast w pionie. Obecny wygląd komponentu jest konsekwencją zastosowania klasy `container` zdefiniowanej w pliku `global.css`, a więc obowiązującej na obszarze całej aplikacji:
+
+```css
+/* global.css */
+
+.container {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+```
+
+Możliwe jest oczywiście zadeklarowanie dodatkowej klasy o innej nazwie, jednak przy większych projektach wymyślanie skomplikowanych, unikalnych nazw może być uciążliwe. Z myślą o tym problemie Wal udostępnia rozwiązanie: **stylowanie lokalne**, udostępniane przez crate `wal-css`. Aby z niego skorzystać należy zadeklarować osobny plik CSS z nową definicją klasy `container` o nazwie `listitem_styles.css`:
+
+```css
+/* shoppinglist_page/listitem_styles.css */
+
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 1rem;
+  width: 80%;
+  background-color: #049a90a2;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  &:hover {
+    transition: 0.5s;
+    background-color: #049a8f;
+  }
+}
+```
+
+Następnie, aby zastosować nowy styl w komponencie `ListItem` należy zaimportować utworzony arkusz do pliku komponentu za pomocą macro `css_stylesheet!`:
+
+```Rust
+// shoppinglist_page/listitem.rs
+
+use wal_core::{
+    component::{callback::Callback, Component},
+    events::MouseEvent,
+};
+use wal_css::{css::Css, css_stylesheet};
+use wal_rsx::rsx;
+
+thread_local! {
+    static LIST_ITEM_CSS: Css = css_stylesheet!("./listitem_styles.css")
+}
+
+// ...
+
+```
+
+Zaimportowany obiekt `LIST_ITEM_CSS` może być wykorzystywany aby uszyskać dostęp do nowej defincji klasy `container` wewnątrz macro `rsx!` poprzez operator indeksowania:
+
+```Rust
+// shoppinglist_page/listitem.rs
+
+// ...
+
+fn view(
+        &self,
+        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+    ) -> wal_core::virtual_dom::VNode {
+        let props = self.props.clone();
+
+        let delete_on_click = behavior.create_callback(move |_event: MouseEvent| {
+            props.remove_callback.emit(props.details.id);
+        });
+
+        LIST_ITEM_CSS.with(|css| {
+            rsx! {
+                <div class={&css["container"]}>
+                    <div class="container">
+                        <p>"name"</p>
+                        <p>{&self.props.details.name}</p>
+                    </div>
+                    <div class="container">
+                        <p>"count"</p>
+                        <p>{self.props.details.count}</p>
+                    </div>
+                    <button onclick={delete_on_click}>
+                        "delete"
+                    </button>
+                </div>
+            }
+        })
+    }
+
+// ...
+```
+
+Dodatkowo nadal możliwe jest korzystanie z globalnej definicji klasy `container` w miejscach, gdzie nie jest pożądane jej nadpisywanie.

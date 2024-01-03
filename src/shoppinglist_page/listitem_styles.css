@@ -1,0 +1,16 @@
+.container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  gap: 1rem;
+  width: 80%;
+  background-color: #049a90a2;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+
+  &:hover {
+    transition: 0.5s;
+    background-color: #049a8f;
+  }
+}
