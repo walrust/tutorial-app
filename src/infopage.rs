@@ -8,13 +8,13 @@ impl Component for InfoPage {
 
     type Properties = ();
 
-    fn new(props: Self::Properties) -> Self {
+    fn new(_props: Self::Properties) -> Self {
         InfoPage
     }
 
     fn view(
         &self,
-        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+        _behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
     ) -> wal_core::virtual_dom::VNode {
         rsx!(<div class="container">
             <h1>"This app has been made using Wal"</h1>
@@ -24,7 +24,7 @@ impl Component for InfoPage {
         </div>)
     }
 
-    fn update(&mut self, message: Self::Message) -> bool {
+    fn update(&mut self, _message: Self::Message) -> bool {
         false
     }
 }

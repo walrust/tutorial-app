@@ -229,6 +229,6 @@ Na stronie z informacjami chcemy wyświetlić użytkownikowi krótkie informacje
 // ...
 ```
 
-## Strona powitalna
+## Strona z lista zakupów
 
-Strona powitalna bedzie składała się z kilku pomniejszych komponantów: komponentu z wiadomością powitalną oraz komponentu z formularzem, gdzie użytkownik będzie mógł wpisać swoje imię. W folderze `src` tworzymy nowy folder o nazwie `welcomepage_components`. ewnatrz nowego folderu należy utowrzyć dwa nowe pliki: `welcomebanner.rs` oraz `userform.rs`. Dodatkowo należy utowrzyć plik `mod.rs`, gdzie zawarte będą deklaracje modułów dla nowych plików:
+Strona z lista zakupów bedzie składała się z kilku pomniejszych komponantów: komponentu głównego zawierającego listę zakupów oraz komponentu z formularzem, gdzie użytkownik będzie mógł wpisać nowe rzeczy do kupienia. Wnatrz nowego folderu należy utowrzyć dwa nowe pliki: `welcomebanner.rs` oraz `userform.rs`. Dodatkowo należy utowrzyć plik `mod.rs`, gdzie zawarte będą deklaracje modułów dla nowych plików:
