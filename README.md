@@ -440,7 +440,7 @@ impl Component for ListItemForm {
 
 ```
 
-### komponent z listą zakupów
+### Komponent z listą zakupów
 
 Główny komponent `ShoppingListPage` zawierający listę zakupów zadeklarowany zostanie w pliku `shoppinglist_page/mod.rs`. Zawierać on będzie w sobie jeden komponent `ListItemForm` oraz wiele komponentów `ListItem`. Jest to nadrzędny komponent całej podstrony, dlatego to w nim stworzone zostaną `Callbacki` wymagande do działania wyżej wymienionych komponentów. Kompnent `ShoppingListPage` przechowywać będzie informację o identyfikatorze dla potencjalnego nowego elementu, a także wektor elementów obecnych aktualnie na liście:
 
