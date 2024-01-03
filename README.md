@@ -1,22 +1,24 @@
+Karol Kącki, Wal 2024
+
 # Wprowadzenie
 
-Ten dokument zawiera instrukcję instalacji oraz korzystania z narzędzia wal, przeznaczonego do tworzenia warstwy front-endowej aplikacji webowych przy pomocy języka Rust.
+Ten dokument zawiera instrukcję instalacji oraz korzystania z narzędzia Wal, przeznaczonego do tworzenia warstwy front-endowej aplikacji webowych przy pomocy języka Rust.
 
 # Instalacja
 
 Przed rozpoczęciem procesu tworzenia aplikacji niezbędne jest wykonanie następujących kroków:
 
 1. Instalacja języka Rust.
-2. Inicjalizacja szablonu projektu .
+2. Inicjalizacja szablonu projektu.
 3. Instalacja narzędzi wasm-bindgen-cli oraz trunk.
 
 ## Instalacja języka Rust
 
-Aby umożliwić instalację biblioteki Wal należy najpierw zainstalować kompilator języka Rust. Szczegółowe instrukcje dostępne są na oficjalnej stronie języka Rust: https://www.rust-lang.org/learn/get-started
+Aby umożliwić instalację biblioteki Wal należy najpierw zainstalować kompilator języka Rust. Szczegółowe instrukcje dostępne są na oficjalnej stronie języka Rust: https://www.rust-lang.org/learn/get-started.
 
 ## Inicjalizacja szablonu projektu
 
-Aby ułatwić inicjalizację początkowego projektu należy skorzystać z [szablonu projektu](https://github.com/walrust/template). Kod można skopiować bezpośrednio z repozytorium szablonu lub wygenerować przy pomocy narzędzia [Cargo Generate](https://github.com/cargo-generate/cargo-generate) .
+Aby ułatwić inicjalizację początkowego projektu zaleca się skorzystanie z [szablonu projektu](https://github.com/walrust/template). Kod można skopiować bezpośrednio z repozytorium szablonu lub wygenerować przy pomocy narzędzia [Cargo Generate](https://github.com/cargo-generate/cargo-generate) .
 
 ### Inicjalizacja z użyciem Cargo Generate
 
@@ -40,7 +42,7 @@ cd ./tutorial-app
 
 ## Instalacja wasm-bindgen-cli oraz trunk
 
-Po pobraniu szablonu należy zainstalować dodatkowe narzędzia, które potrzebne będą do uruchomienia aplikacji:
+Po inicjalizacji szablonu należy zainstalować dodatkowe narzędzia, które potrzebne będą do uruchomienia aplikacji:
 
 1. **wasm-bindgen-cli**, które jest wymagane do umożliwienia automatycznej kompilacji z języka Rust do formatu WebAssembly.
 2. **trunk**, które umożliwia wystawienie aplikacji oraz zapewnia funkcję hot-reload przydatną podczas fazy developementu.
@@ -61,15 +63,15 @@ cargo build
 trunk serve
 ```
 
-Aplikacja zostanie wystawiona lokalnie na porcie, który został wskazany w pliku **Trunk.toml** (domyślnie jest to port nr 3000). Kiedy proces Trunk jest uruchomiony, dokonane w projekcie zmiany po ich zapisaniu zostaną automatycznie zastosowane w uruchomionej aplikacji.
+Aplikacja zostanie wystawiona lokalnie na porcie, który został wskazany w pliku **Trunk.toml** (domyślnie jest to port nr 3000). Kiedy proces Trunk jest uruchomiony, dokonane w projekcie zmiany (po ich zapisaniu) zostaną automatycznie zastosowane w uruchomionej aplikacji.
 
 # Tworzenie aplikacji z wykorzystaniem Wal
 
-W tej sekcji zostanie opisany krok po kroku proces tworzenia prostej aplikacji z wykorzystaniem narzędzia wal. Aplikacja ta składała się będzie z dwóch podstron: strony z listą zakupów oraz strony z informacjami o projekcie.
+W tej sekcji zostanie opisany krok po kroku proces tworzenia prostej aplikacji z wykorzystaniem narzędzia Wal. Aplikacja ta składała się będzie z dwóch podstron: **strony z listą zakupów** oraz **strony z informacjami o projekcie**.
 
 ## Stworzenie komponentów stron
 
-Pierwszym krokiem będzie stworzenie dwóch komponentów, po jednym dla każdej z podstron. Strona informacyjna będzie składała się tylko z jednego prostego komponentu, dlatego możemy stowrzyć jej plik o nazwie `infopage.rs` bezpośrednio w katalogu src. Strona z listą zakupów będzie bardziej złożona, dlatego lepiej wyznaczyć dla niej osoby folder o nazwie `shoppinglist_page`. W środku folderu w pliku `mod.rs` możemy zadeklarować tymczasowo główny komponent strony z zakupami. Struktura plików powinna wyglądac nasteująco:
+Pierwszym krokiem będzie stworzenie dwóch komponentów, po jednym dla każdej z podstron. Strona informacyjna będzie składała się tylko z jednego prostego komponentu, dlatego jej plik o nazwie `infopage.rs` stworzony zostanie bezpośrednio w katalogu `src`. Strona z listą zakupów będzie bardziej złożona, dlatego lepiej wyznaczyć dla niej osoby folder `src/shoppinglist_page`. W środku utworzonego folderu w pliku `mod.rs` zadeklarowany zostanie tymczasowo główny komponent strony z zakupami. Struktura plików powinna wyglądac nasteująco:
 
 ```
 src
@@ -80,7 +82,7 @@ src
 └── hellopage.rs
 ```
 
-Następnie w pliku `main.rs` należy dodać nowo utworzony plik oraz folder jako moduły projektu:
+Następnie w pliku `main.rs` należy dodać nowo utworzony plik `infopage.rs` oraz folder `shoppinglist_page` jako moduły projektu:
 
 ```Rust
 use hellopage::HelloComponent;
@@ -98,7 +100,7 @@ fn main() {
 }
 ```
 
-Wewnątrz każdego z nowych plików znajdować się będzie struktura o odpowiadającej nazwie będąca głównym komponentem danej podstrony. Dla każdej z tych struktur zaimplementowany musi zostać trait `Component` oraz trait `Default`.
+Wewnątrz każdego z nowych plików znajdować się będzie struktura o odpowiadającej folderowi nazwie będąca głównym komponentem danej podstrony. Dla każdej z tych struktur zaimplementowany musi zostać trait `Component` oraz trait `Default`.
 
 ```Rust
 // --- infopage.rs ---
@@ -184,7 +186,7 @@ impl Default for ShoppingListPage {
 }
 ```
 
-Po stworzeniu komponentów należy dodać je jako komponenty główne dla podstron. Dla adresu URL: `/` chcemy wyświetlić komponent `ShoppingListPage`, natomiast dla adresu `/info` komponent `InfoPage`. W tym celu dodajemy 2 wywołania funkcji `RouterBuilder::add_page` w pliku `main.rs`. Na tym etapie można pozbyć się komponentu `HelloPage` wchodzącego w skład początkowego szablonu projektu, ponieważ nie będzie on potrzebny w dalszych etapach.
+Po stworzeniu komponentów należy dodać je jako komponenty główne podstron. Dla adresu URL: `/` wyświetlany będzie komponent `ShoppingListPage`, natomiast dla adresu `/info` komponent `InfoPage`. W tym celu dodać należy dwa wywołania funkcji `RouterBuilder::add_page` w pliku `main.rs`. Na tym etapie można pozbyć się komponentu `HelloPage` wchodzącego w skład początkowego szablonu projektu, ponieważ nie będzie on potrzebny w dalszych etapach.
 
 ```Rust
 // --- main.rs ---
@@ -208,7 +210,7 @@ W oknie przeglądarki można już zobaczyć wyświetlane komponenty po nawigacji
 
 ## Strona z informacjami
 
-Na stronie z informacjami chcemy wyświetlić użytkownikowi krótkie informacje o stronie wraz z linkiem do repozytorium, gdzie znajdzie on więcej przykładów. W tym celu należy zmienić strukturę komponentu w pliku `infopage.rs`. Dodatkowo chcemu dać możliwość nawigacji do strony z listą zakupów. W tym celu wewnątrz komponentu umiescić należy `<Link>` pozwalający na wydajną nawigacje pomiedzy różnymi adresami URL wewnątrz aplikacji.
+Na stronie z informacjami wyświetlone zostaną użytkownikowi krótkie informacje o stronie wraz z linkiem do repozytorium, gdzie znajdzie on więcej przykładów. W tym celu należy zmienić strukturę komponentu w pliku `infopage.rs`. Dodatkowo użytkownik możliwość nawigacji do strony z listą zakupów. W tym celu wewnątrz komponentu umiescić należy `<Link>` pozwalający na wydajną nawigacje pomiedzy różnymi adresami URL wewnątrz aplikacji.
 
 ```Rust
 // --- infopage.rs ---
@@ -248,7 +250,7 @@ pub(crate) struct ListItemDetails {
 }
 ```
 
-Poza danymi o zakupie użytkownik powinien mieć możliwość usuwania już zakupionych produktów z listy. W tym celu należy z zewnątrz dodatkowo przekazać do komponentu `Callback`, który przymuje idenyfikator elementu z listy i odpowiada za jego usunięcie.
+Poza danymi o zakupie użytkownik powinien mieć możliwość usuwania już zakupionych produktów z listy. W tym celu należy z zewnątrz dodatkowo przekazać do komponentu `Callback`, który przymuje identyfikator elementu z listy i odpowiada za jego usunięcie.
 
 Komponent `ListItem` wygląda następująco:
 
@@ -338,7 +340,7 @@ pub(crate) struct ListItemForm {
 }
 ```
 
-Poza wspomnianą nazwą i liczbą jednostek produktu należy również przekazać do komponentu identyfikator, który zostanie nadany nowemu elementowi na liście po utworzeniu oraz `Callback` przyjmujący szczegóły nowego elementu i odpowiadający za jego dodanie do listy. Kod komponentu `ListItemForm` wygląda następująco:
+Poza wspomnianą nazwą i liczbą jednostek produktu należy również przekazać do komponentu identyfikator, który zostanie nadany nowemu elementowi na liście po jego utworzeniu oraz `Callback` przyjmujący szczegóły nowego elementu i odpowiadający za jego dodanie do listy. Kod komponentu `ListItemForm` wygląda następująco:
 
 ```Rust
 
@@ -440,7 +442,7 @@ impl Component for ListItemForm {
 
 ### komponent z listą zakupów
 
-Główny komponent `ShoppingListPage` zawierający listę zakupów zadeklarowany zostanie w pliku `shoppinglist_page/mod.rs`. Zawierać on będzie w sobie jeden komponent `ListItemForm` oraz wiele komponentów `ListItem`. Jest to nadrzędny komponent całej podstrony dlatego to w nim stworzone zostaną `Callbacki` wymagande do działania wyżej wymienionych komponentów. Kompnent `ShoppingListPage` przechowywać będzie informację o identyfikatorze dla potencjalnego nowego elementu, a także wektor elementów obecnych na liście:
+Główny komponent `ShoppingListPage` zawierający listę zakupów zadeklarowany zostanie w pliku `shoppinglist_page/mod.rs`. Zawierać on będzie w sobie jeden komponent `ListItemForm` oraz wiele komponentów `ListItem`. Jest to nadrzędny komponent całej podstrony, dlatego to w nim stworzone zostaną `Callbacki` wymagande do działania wyżej wymienionych komponentów. Kompnent `ShoppingListPage` przechowywać będzie informację o identyfikatorze dla potencjalnego nowego elementu, a także wektor elementów obecnych aktualnie na liście:
 
 ```Rust
 pub(crate) struct ShoppingListPage {
@@ -505,6 +507,7 @@ impl Component for ShoppingListPage {
 
         rsx!(
             <div class="container">
+                <Link to="/info">"project info"</Link>
                 <ListItemForm props={ListItemFormProps {next_id: self.next_id, add_handler: add_handler_callback}}/>
                 <h1>"Items on the list:"</h1>
                 for { self.list_items.iter().map( |details| {
@@ -546,7 +549,7 @@ impl Default for ShoppingListPage {
 
 ## Dopracowanie stylowania
 
-Elementy dodawane do listy nie wylądają zbyt ładnie. Lepiej wyglądałyby elementy, których szczegóły są wyświetlone w poziomie zamiast w pionie. Obecny wygląd komponentu jest konsekwencją zastosowania klasy `container` zdefiniowanej w pliku `global.css`, a więc obowiązującej na obszarze całej aplikacji:
+Elementy dodawane do listy nie wylądają na obecnym etapie zbyt ładnie. Bardziej stosowne bedą elementy, których szczegóły są wyświetlone w poziomie zamiast w pionie. Obecny wygląd komponentu jest konsekwencją zastosowania klasy `container` zdefiniowanej w pliku `global.css`, a więc obowiązującej na obszarze całej aplikacji:
 
 ```css
 /* global.css */
@@ -560,7 +563,7 @@ Elementy dodawane do listy nie wylądają zbyt ładnie. Lepiej wyglądałyby ele
 }
 ```
 
-Możliwe jest oczywiście zadeklarowanie dodatkowej klasy o innej nazwie, jednak przy większych projektach wymyślanie skomplikowanych, unikalnych nazw może być uciążliwe. Z myślą o tym problemie Wal udostępnia rozwiązanie: **stylowanie lokalne**, udostępniane przez crate `wal-css`. Aby z niego skorzystać należy zadeklarować osobny plik CSS z nową definicją klasy `container` o nazwie `listitem_styles.css`:
+Możliwe jest oczywiście zadeklarowanie dodatkowej klasy o innej nazwie, jednak przy większych projektach wymyślanie skomplikowanych, unikalnych nazw może być uciążliwe. Z myślą o tym problemie Wal udostępnia rozwiązanie: **stylowanie lokalne** udostępniane przez crate `wal-css`. Aby z niego skorzystać należy zadeklarować osobny plik CSS z nową definicją klasy `container` o nazwie `listitem_styles.css`:
 
 ```css
 /* shoppinglist_page/listitem_styles.css */
@@ -643,3 +646,7 @@ fn view(
 ```
 
 Dodatkowo nadal możliwe jest korzystanie z globalnej definicji klasy `container` w miejscach, gdzie nie jest pożądane jej nadpisywanie.
+
+# Dodatkowe zasoby
+
+Kod narzędzia Wal jest udostępniony publicznie poprzez oficjalne [repozytorium](https://github.com/walrust/wal). Znajdują się tam również dodatkowe przykłady zastosowania narzędzia.
