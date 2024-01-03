@@ -117,12 +117,12 @@ impl Component for InfoPage {
     type Message = ();
     type Properties = ();
 
-	// component constructor
+    // component constructor
     fn new(props: Self::Properties) -> Self {
         InfoPage
     }
    
-	// view function - here we define the component structure using rsx syntax
+    // view function - here we define the component structure using rsx syntax
     fn view(
         &self,
         behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
@@ -130,7 +130,7 @@ impl Component for InfoPage {
         rsx!(<div>"This is a info page."</div>)
     }
 
-	// update function - for now we don't need any updating
+    // update function - for now we don't need any updating
     fn update(&mut self, message: Self::Message) -> bool {
         false
     }
@@ -159,12 +159,12 @@ impl Component for ShoppingListPage {
     type Message = ();
     type Properties = ();
 
-	// component constructor
+    // component constructor
     fn new(props: Self::Properties) -> Self {
         ShoppingListPage
     }
    
-	// view function - here we define the component structure using rsx syntax
+    // view function - here we define the component structure using rsx syntax
     fn view(
         &self,
         behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
@@ -172,7 +172,7 @@ impl Component for ShoppingListPage {
         rsx!(<div>"This is a shopping list page."</div>)
     }
 
-	// update function - for now we don't need any updating
+    // update function - for now we don't need any updating
     fn update(&mut self, message: Self::Message) -> bool {
         false
     }
