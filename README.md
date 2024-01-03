@@ -2,7 +2,7 @@ Karol Kącki, Wal 2024
 
 # Wprowadzenie
 
-Ten dokument zawiera instrukcję instalacji oraz korzystania z narzędzia Wal, przeznaczonego do tworzenia warstwy front-endowej aplikacji webowych przy pomocy języka Rust.
+Ten dokument zawiera instrukcję instalacji oraz korzystania z narzędzia Wal, przeznaczonego do tworzenia warstwy front-endowej aplikacji webowych przy pomocy języka Rust. W dokumencie przedstawiono proces tworzenia przykładowej aplikacji krok po kroku. Wynikowy kod uzyskany poprzez realizację instrukcji znajduje się w plikach repozytorium.
 
 # Instalacja
 
