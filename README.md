@@ -649,6 +649,12 @@ fn view(
 
 Dodatkowo nadal możliwe jest korzystanie z globalnej definicji klasy `container` w miejscach, gdzie nie jest pożądane jej nadpisywanie.
 
+# Stworzona strona
+
+Wygląd stworzonej strony oraz jej funkcjonalności zaprezentowano na filmiku:
+
+https://github.com/walrust/tutorial-app/assets/115318813/0d330785-e8f1-4e8e-8ea0-e77e59960e79
+
 # Dodatkowe zasoby
 
 Kod narzędzia Wal jest udostępniony publicznie poprzez oficjalne [repozytorium](https://github.com/walrust/wal). Znajdują się tam również dodatkowe przykłady zastosowania narzędzia.
