@@ -229,6 +229,313 @@ Na stronie z informacjami chcemy wyświetlić użytkownikowi krótkie informacje
 // ...
 ```
 
-## Strona z lista zakupów
+## Strona z listą zakupów
 
-Strona z lista zakupów bedzie składała się z kilku pomniejszych komponantów: komponentu głównego zawierającego listę zakupów oraz komponentu z formularzem, gdzie użytkownik będzie mógł wpisać nowe rzeczy do kupienia. Wnatrz nowego folderu należy utowrzyć dwa nowe pliki: `welcomebanner.rs` oraz `userform.rs`. Dodatkowo należy utowrzyć plik `mod.rs`, gdzie zawarte będą deklaracje modułów dla nowych plików:
+Strona z listą zakupów bedzie składała się z kilku pomniejszych komponantów: komponentu głównego zawierającego listę zakupów, komponentu z formularzem, gdzie użytkownik będzie mógł wpisać nowe rzeczy do kupienia oraz komponentu, który reprezentował będzie pojedynczą pozycję z listy.
+
+w folderze shoppinglist_page tworzone są pliki: `listitem.rs` oraz `listitem_form.rs`.
+
+### Komponent przedmiotów z listy
+
+W pliku `listitem.rs` powstanie komponent reprezentujący pojedynczą pozycję z listy. Każdy przedmiot na liście posiada swój identyfikator, nazwę produktu oraz liczbę jednostek. Reprezentowane jest to przez strukturę:
+
+```Rust
+#[derive(Hash, Clone)]
+pub(crate) struct ListItemDetails {
+    pub(crate) id: i32,
+    pub(crate) name: String,
+    pub(crate) count: i32,
+}
+```
+
+Poza danymi o zakupie użytkownik powinien mieć możliwość usuwania już zakupionych produktów z listy. W tym celu należy z zewnątrz dodatkowo przekazać do komponentu `Callback`, który przymuje idenyfikator elementu z listy i odpowiada za jego usunięcie.
+
+Komponent `ListItem` wygląda następująco:
+
+```Rust
+// listitem.rs
+
+use wal_core::{
+    component::{callback::Callback, Component},
+    events::MouseEvent,
+};
+use wal_rsx::rsx;
+
+#[derive(Hash, Clone)]
+pub(crate) struct ListItemProps {
+    pub(crate) details: ListItemDetails,
+    pub(crate) remove_callback: Callback<i32>,
+}
+
+#[derive(Hash, Clone)]
+pub(crate) struct ListItemDetails {
+    pub(crate) id: i32,
+    pub(crate) name: String,
+    pub(crate) count: i32,
+}
+
+pub(crate) struct ListItem {
+    props: ListItemProps,
+}
+
+impl Component for ListItem {
+    type Message = ();
+
+    type Properties = ListItemProps;
+
+    fn new(props: Self::Properties) -> Self {
+        ListItem { props }
+    }
+
+    fn view(
+        &self,
+        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+    ) -> wal_core::virtual_dom::VNode {
+        let props = self.props.clone();
+
+        // create callback to handle button press
+        let delete_on_click = behavior.create_callback(move |_event: MouseEvent| {
+            // emit callback received in props
+            props.remove_callback.emit(props.details.id);
+        });
+
+        rsx! {
+            <div class="container">
+                <span>{&self.props.details.name}</span>
+                <span>{self.props.details.count}</span>
+                <button onclick={delete_on_click}>
+                    "delete"
+                </button>
+            </div>
+        }
+    }
+
+    fn update(&mut self, _message: Self::Message) -> bool {
+        false
+    }
+}
+
+```
+
+### Komponent z formulazem do dodawania nowych produktów
+
+Kolejnym komponentem jest formularz, dzięki któremu użytkownik ma możliwość dodawania nowych porduktów do listy. Formularz posiada pola z nazwą oraz liczbą jednostek produktu.
+
+Komponent będzie implementowny przez strukturę `ListItemForm`.
+
+```Rust
+pub(crate) struct ListItemForm {
+    next_item_id: i32,
+    item_name: String,
+    item_count: i32,
+    add_handler: Callback<ListItemDetails>,
+}
+```
+
+Poza wspomnianą nazwą i liczbą jednostek produktu należy również przekazać do komponentu identyfikator, który zostanie nadany nowemu elementowi na liście po utworzeniu oraz `Callback` przyjmujący szczegóły nowego elementu i odpowiadający za jego dodanie do listy. Kod komponentu `ListItemForm` wygląda następująco:
+
+```Rust
+
+use wal_core::{
+    component::{callback::Callback, Component},
+    events::MouseEvent,
+};
+use wal_rsx::rsx;
+use wasm_bindgen::JsCast;
+use web_sys::HtmlInputElement;
+
+use crate::shoppinglist_page::listitem::ListItemDetails;
+
+pub(crate) struct ListItemForm {
+    next_item_id: i32,
+    item_name: String,
+    item_count: i32,
+    add_handler: Callback<ListItemDetails>,
+}
+
+#[derive(Hash, Clone)]
+pub(crate) struct ListItemFormProps {
+    pub(crate) next_id: i32,
+    pub(crate) add_handler: Callback<ListItemDetails>,
+}
+
+impl Component for ListItemForm {
+    type Message = ();
+
+    type Properties = ListItemFormProps;
+
+    fn new(props: Self::Properties) -> Self {
+        ListItemForm {
+            next_item_id: props.next_id,
+            item_name: "".to_string(),
+            item_count: 0,
+            add_handler: props.add_handler,
+        }
+    }
+
+    fn view(
+        &self,
+        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+    ) -> wal_core::virtual_dom::VNode {
+        let new_item_id: i32 = self.next_item_id;
+        let add_handler = self.add_handler.clone();
+
+        // create callback to handle button press
+        let add_on_click = behavior.create_callback(move |_event: MouseEvent| {
+            let document = web_sys::window().unwrap().document().unwrap();
+
+            // get name from input
+            let element = document.get_element_by_id("newItemName").unwrap();
+            let input_element = element.dyn_into::<HtmlInputElement>().unwrap();
+            let new_item_name = input_element.value();
+
+            // get count from input
+            let element = document.get_element_by_id("newItemCount").unwrap();
+            let input_element = element.dyn_into::<HtmlInputElement>().unwrap();
+            let new_item_count = input_element.value().parse::<i32>().unwrap();
+
+            let message = ListItemDetails {
+                id: new_item_id,
+                count: new_item_count,
+                name: new_item_name,
+            };
+            // emit callback received in props
+            add_handler.emit(message);
+        });
+
+        rsx! {
+            <>
+            <h1>"Add new item"</h1>
+            <div class="container">
+                <div>
+                    <label>"name"</label>
+                    <br/>
+                    <input id="newItemName" value = {&self.item_name} />
+                </div>
+                <div >
+                    <label>"count"</label>
+                    <br/>
+                    <input id="newItemCount" value = {self.item_count} />
+                </div>
+                <button onclick={add_on_click}>
+                    "Add"
+                </button>
+            </div>
+            </>
+        }
+    }
+
+    fn update(&mut self, _message: Self::Message) -> bool {
+        false
+    }
+}
+
+```
+
+### komponent z listą zakupów
+
+Główny komponent `ShoppingListPage` zawierający listę zakupów zadeklarowany zostanie w pliku `shoppinglist_page/mod.rs`. Zawierać on będzie w sobie jeden komponent `ListItemForm` oraz wiele komponentów `ListItem`. Jest to nadrzędny komponent całej podstrony dlatego to w nim stworzone zostaną `Callbacki` wymagande do działania wyżej wymienionych komponentów. Kompnent `ShoppingListPage` przechowywać będzie informację o identyfikatorze dla potencjalnego nowego elementu, a także wektor elementów obecnych na liście:
+
+```Rust
+pub(crate) struct ShoppingListPage {
+    list_items: Vec<ListItemDetails>,
+    next_id: i32,
+}
+```
+
+Dodatkowo `ShoppingListPage` może otrzymywac wiadomości o dodaniu lub usunięciu elementu z listy reprezentowane poprzez `ShoppingListMessage`:
+
+```Rust
+pub(crate) enum ShoppingListMessage {
+    AddItem(ListItemDetails),
+    RemoveItem(i32),
+}
+```
+
+Cały kod komponentu wygląda następująco:
+
+```Rust
+
+use wal_core::component::Component;
+use wal_rsx::rsx;
+
+use crate::shoppinglist_page::{
+    listitem::{ListItem, ListItemProps},
+    listitem_form::ListItemFormProps,
+};
+
+use self::{listitem::ListItemDetails, listitem_form::ListItemForm};
+
+mod listitem;
+mod listitem_form;
+
+pub(crate) enum ShoppingListMessage {
+    AddItem(ListItemDetails),
+    RemoveItem(i32),
+}
+
+pub(crate) struct ShoppingListPage {
+    list_items: Vec<ListItemDetails>,
+    next_id: i32,
+}
+
+impl Component for ShoppingListPage {
+    type Message = ShoppingListMessage;
+    type Properties = ();
+
+    fn new(_props: Self::Properties) -> Self {
+        ShoppingListPage {
+            list_items: vec![],
+            next_id: 0,
+        }
+    }
+
+    fn view(
+        &self,
+        behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
+    ) -> wal_core::virtual_dom::VNode {
+        // create callback which will send the AddItem message
+        let add_handler_callback = behavior.create_callback(ShoppingListMessage::AddItem);
+
+        rsx!(
+            <div class="container">
+                <ListItemForm props={ListItemFormProps {next_id: self.next_id, add_handler: add_handler_callback}}/>
+                <h1>"Items on the list:"</h1>
+                for { self.list_items.iter().map( |details| {
+                    // create callback which will send the RemoveItem message with given id
+                    let remove_callback = behavior.create_callback(ShoppingListMessage::RemoveItem);
+                    rsx! { <ListItem props={ ListItemProps{details: details.clone(), remove_callback}} /> }
+                })}
+            </div>
+        )
+    }
+
+    fn update(&mut self, message: Self::Message) -> bool {
+        match message {
+            ShoppingListMessage::AddItem(details) => {
+                // update id stored for the next element
+                self.next_id += 1;
+                // update add new element to the list
+                self.list_items.push(details);
+                // return true to re-render
+                true
+            }
+            ShoppingListMessage::RemoveItem(id_to_delete) => {
+                // remove element with given id from the list
+                self.list_items.retain(|i| i.id != id_to_delete);
+                // return true to re-render
+                true
+            }
+        }
+    }
+}
+
+impl Default for ShoppingListPage {
+    fn default() -> Self {
+        Self::new(())
+    }
+}
+
+```
+
+## Dopracowanie stylowania

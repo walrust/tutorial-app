@@ -42,6 +42,7 @@ impl Component for ListItemForm {
         let new_item_id: i32 = self.next_item_id;
         let add_handler = self.add_handler.clone();
 
+        // create callback to handle button press
         let add_on_click = behavior.create_callback(move |_event: MouseEvent| {
             let document = web_sys::window().unwrap().document().unwrap();
 
@@ -60,6 +61,7 @@ impl Component for ListItemForm {
                 count: new_item_count,
                 name: new_item_name,
             };
+            // emit callback received in props
             add_handler.emit(message);
         });
 
