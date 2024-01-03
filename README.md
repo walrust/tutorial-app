@@ -45,7 +45,7 @@ cd ./tutorial-app
 Po inicjalizacji szablonu należy zainstalować dodatkowe narzędzia, które potrzebne będą do uruchomienia aplikacji:
 
 1. **wasm-bindgen-cli**, które jest wymagane do umożliwienia automatycznej kompilacji z języka Rust do formatu WebAssembly.
-2. **trunk**, które umożliwia wystawienie aplikacji oraz zapewnia funkcję hot-reload przydatną podczas fazy developementu.
+2. **trunk**, które umożliwia wystawienie aplikacji oraz zapewnia funkcję hot-reload przydatną podczas fazy developmentu.
 
 Instalacja obydwu narzędzi odbywa się poprzez wywołanie poleceń:
 
