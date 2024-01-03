@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-wal-core = "0.1.1"
-wal-rsx = "0.1.2"
-wal-css = "0.1.1"
+wal-core = "0.1"
+wal-rsx = "0.1"
+wal-css = "0.1"
 wasm-bindgen = "0.2.87"
 
 [dependencies.web-sys]

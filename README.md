@@ -220,12 +220,14 @@ Na stronie z informacjami wyświetlone zostaną użytkownikowi krótkie informac
         &self,
         behavior: &mut impl wal_core::component::behavior::Behavior<Self>,
     ) -> wal_core::virtual_dom::VNode {
-        rsx!(<div class="container">
-            <h1>"This app has been made using Wal"</h1>
-            <p>"You can find more complex examples on the offical Wal GtiHub repository in the demo directory:"</p>
-            <a href="https://github.com/walrust/wal">"Wal repository"</a>
-            <Link to="/">"back to the shopping list"</Link>
-        </div>)
+        rsx!(
+            <div class="container">
+                <h1>"This app has been made using Wal"</h1>
+                <p>"You can find more complex examples on the offical Wal GtiHub repository in the demo directory:"</p>
+                <a href="https://github.com/walrust/wal">"Wal repository"</a>
+                <Link to="/">"back to the shopping list"</Link>
+            </div>
+        )
     }
 
 // ...
@@ -296,7 +298,7 @@ impl Component for ListItem {
         let props = self.props.clone();
 
         // create callback to handle button press
-        let delete_on_click = behavior.create_callback(move |_event: MouseEvent| {
+        let delete_on_click = Callback::new(move |_event: MouseEvent| {
             // emit callback received in props
             props.remove_callback.emit(props.details.id);
         });
@@ -389,18 +391,20 @@ impl Component for ListItemForm {
         let add_handler = self.add_handler.clone();
 
         // create callback to handle button press
-        let add_on_click = behavior.create_callback(move |_event: MouseEvent| {
+        let add_on_click = Callback::new(move |_event: MouseEvent| {
             let document = web_sys::window().unwrap().document().unwrap();
 
             // get name from input
             let element = document.get_element_by_id("newItemName").unwrap();
             let input_element = element.dyn_into::<HtmlInputElement>().unwrap();
             let new_item_name = input_element.value();
+            input_element.set_value("");
 
             // get count from input
             let element = document.get_element_by_id("newItemCount").unwrap();
             let input_element = element.dyn_into::<HtmlInputElement>().unwrap();
-            let new_item_count = input_element.value().parse::<i32>().unwrap();
+            let new_item_count = input_element.value().parse::<i32>().unwrap_or(0);
+            input_element.set_value("0");
 
             let message = ListItemDetails {
                 id: new_item_id,
@@ -412,24 +416,20 @@ impl Component for ListItemForm {
         });
 
         rsx! {
-            <>
             <h1>"Add new item"</h1>
             <div class="container">
                 <div>
-                    <label>"name"</label>
-                    <br/>
+                    <label for="newItemName">"name"</label>
                     <input id="newItemName" value = {&self.item_name} />
                 </div>
                 <div >
-                    <label>"count"</label>
-                    <br/>
-                    <input id="newItemCount" value = {self.item_count} />
+                    <label for="newItemCount">"count"</label>
+                    <input id="newItemCount" type="number" value = {self.item_count} />
                 </div>
                 <button onclick={add_on_click}>
                     "Add"
                 </button>
             </div>
-            </>
         }
     }
 
@@ -442,7 +442,7 @@ impl Component for ListItemForm {
 
 ### Komponent z listą zakupów
 
-Główny komponent `ShoppingListPage` zawierający listę zakupów zadeklarowany zostanie w pliku `shoppinglist_page/mod.rs`. Zawierać on będzie w sobie jeden komponent `ListItemForm` oraz wiele komponentów `ListItem`. Jest to nadrzędny komponent całej podstrony, dlatego to w nim stworzone zostaną `Callbacki` wymagande do działania wyżej wymienionych komponentów. Kompnent `ShoppingListPage` przechowywać będzie informację o identyfikatorze dla potencjalnego nowego elementu, a także wektor elementów obecnych aktualnie na liście:
+Główny komponent `ShoppingListPage` zawierający listę zakupów zadeklarowany zostanie w pliku `shoppinglist_page/mod.rs`. Zawierać on będzie w sobie jeden komponent `ListItemForm` oraz wiele komponentów `ListItem`. Jest to nadrzędny komponent całej podstrony, dlatego to w nim stworzone zostaną `Callbacki` wymagane do działania wyżej wymienionych komponentów. Kompnent `ShoppingListPage` przechowywać będzie informację o identyfikatorze dla potencjalnego nowego elementu, a także wektor elementów obecnych aktualnie na liście:
 
 ```Rust
 pub(crate) struct ShoppingListPage {
@@ -508,12 +508,12 @@ impl Component for ShoppingListPage {
         rsx!(
             <div class="container">
                 <Link to="/info">"project info"</Link>
-                <ListItemForm props={ListItemFormProps {next_id: self.next_id, add_handler: add_handler_callback}}/>
+                <ListItemForm props=ListItemFormProps {next_id: self.next_id, add_handler: add_handler_callback}/>
                 <h1>"Items on the list:"</h1>
                 for { self.list_items.iter().map( |details| {
                     // create callback which will send the RemoveItem message with given id
                     let remove_callback = behavior.create_callback(ShoppingListMessage::RemoveItem);
-                    rsx! { <ListItem props={ ListItemProps{details: details.clone(), remove_callback}} /> }
+                    rsx! { <ListItem props=ListItemProps{details: details.clone(), remove_callback} /> }
                 })}
             </div>
         )
@@ -561,6 +561,8 @@ Elementy dodawane do listy nie wylądają na obecnym etapie zbyt ładnie. Bardzi
   align-items: center;
   gap: 1rem;
 }
+
+/* other classes */
 ```
 
 Możliwe jest oczywiście zadeklarowanie dodatkowej klasy o innej nazwie, jednak przy większych projektach wymyślanie skomplikowanych, unikalnych nazw może być uciążliwe. Z myślą o tym problemie Wal udostępnia rozwiązanie: **stylowanie lokalne** udostępniane przez crate `wal-css`. Aby z niego skorzystać należy zadeklarować osobny plik CSS z nową definicją klasy `container` o nazwie `listitem_styles.css`:
@@ -646,6 +648,12 @@ fn view(
 ```
 
 Dodatkowo nadal możliwe jest korzystanie z globalnej definicji klasy `container` w miejscach, gdzie nie jest pożądane jej nadpisywanie.
+
+# Stworzona strona
+
+Wygląd stworzonej strony oraz jej funkcjonalności zaprezentowano na filmiku:
+
+https://github.com/walrust/tutorial-app/assets/115318813/0d330785-e8f1-4e8e-8ea0-e77e59960e79
 
 # Dodatkowe zasoby
 
